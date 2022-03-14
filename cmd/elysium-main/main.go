@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/robfig/cron"
@@ -77,7 +78,7 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		contactsRaw := getContacts()
 
 		// Process contacts
-		contactsSlice := processContact()
+		contactsSlice := processContacts(contactsRaw)
 
 		// Get image from bucket
 		imageUrl := getRandomImage()
@@ -109,6 +110,19 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 
 		oneOffJob.Stop()
 	})
+}
+
+func processContacts(rawContacts ContactList) []To {
+	var slice []To
+	for _, contact := range rawContacts.Contacts {
+		contactStruct := To{
+			Name:  strings.Split(contact.Email, "@")[0],
+			Email: contact.Email,
+		}
+		slice = append(slice, contactStruct)
+	}
+
+	return slice
 }
 
 func getContacts() ContactList {

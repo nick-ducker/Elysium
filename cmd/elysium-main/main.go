@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -25,6 +28,22 @@ type Sender struct {
 type To struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
+}
+type ContactList struct {
+	Contacts []Contacts `json:"contacts"`
+	Count    int        `json:"count"`
+}
+type Attributes struct {
+}
+type Contacts struct {
+	Email            string     `json:"email"`
+	ID               int        `json:"id"`
+	EmailBlacklisted bool       `json:"emailBlacklisted"`
+	SmsBlacklisted   bool       `json:"smsBlacklisted"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	ModifiedAt       time.Time  `json:"modifiedAt"`
+	ListIds          []int      `json:"listIds"`
+	Attributes       Attributes `json:"attributes"`
 }
 
 func StartCrons() {
@@ -55,7 +74,10 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		fmt.Println("Ding I did a thing!")
 
 		// Get all contacts
-		contactSlice := getContacts()
+		contactsRaw := getContacts()
+
+		// Process contacts
+		contactsSlice := processContact()
 
 		// Get image from bucket
 		imageUrl := getRandomImage()
@@ -87,6 +109,35 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 
 		oneOffJob.Stop()
 	})
+}
+
+func getContacts() ContactList {
+	reqUrl := "https://api.sendinblue.com/v3/contacts"
+	res := sibGetRequest(reqUrl)
+
+	defer res.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var body ContactList
+	json.Unmarshal(bodyBytes, &body)
+
+	return body
+}
+
+func sibGetRequest(url string) *http.Response {
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("api-key", os.Getenv("SENDINBLUE_KEY"))
+	req.Header.Add("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	return res
 }
 
 func getEmailTemplate() string {

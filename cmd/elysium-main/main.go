@@ -51,21 +51,30 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 	fmt.Println(cronString)
 	oneOffJob := cron.NewWithLocation(timezone)
 	oneOffJob.AddFunc(cronString, func() {
+
 		fmt.Println("Ding I did a thing!")
-		// nick := To{
-		// 	Email: "notarealemail@fakefakefaker.com",
-		// 	Name: "Nick",
-		// }
+
+		// Get all contacts
+		contactSlice := getContacts()
+
+		// Get image from bucket
+		imageUrl := getRandomImage()
+
+		// Get poem from somewhere
+		poem := getRandomPoem()
+		// Contruct HTML
+		html := constructHtml(imageUrl, poem)
 
 		// dat, err := os.ReadFile("./html/email_template.html")
 		// if err != nil {
 		// 	panic(err)
 		// }
 
-		// html := string(dat)
+		// html := strings.Replace(string(dat), HTTPREPLACE, )
 
 		// Search and replace TEXTREPLACE and HTTPREPLACE
 
+		// Construct transactional query
 		// emailJson := &Email{
 		// 	Sender: Sender{
 		// 		Name: "Elly",
@@ -115,8 +124,6 @@ func randInt(min int, max int) int {
 
 func main() {
 	fmt.Println("Starting crons")
-	fmt.Println(getEmailTemplate())
-
 	StartCrons()
 	for {
 

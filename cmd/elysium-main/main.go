@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
+	"github.com/joho/godotenv"
 	"github.com/robfig/cron"
+	"google.golang.org/api/iterator"
 )
 
 var day int
@@ -75,18 +79,18 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		fmt.Println("Ding I did a thing!")
 
 		// Get all contacts
-		contactsRaw := getContacts()
+		// contactsRaw := getContacts()
 
 		// Process contacts
-		contactsSlice := processContacts(contactsRaw)
+		// contactsSlice := processContacts(contactsRaw)
 
 		// Get image from bucket
-		imageUrl := getRandomImage()
+		// imageUrl := getRandomImage()
 
 		// Get poem from somewhere
-		poem := getRandomPoem()
+		// poem := getRandomPoem()
 		// Contruct HTML
-		html := constructHtml(imageUrl, poem)
+		// html := constructHtml(imageUrl, poem)
 
 		// dat, err := os.ReadFile("./html/email_template.html")
 		// if err != nil {
@@ -110,6 +114,33 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 
 		oneOffJob.Stop()
 	})
+}
+
+func getGcsUrls() []string {
+	bucket := os.Getenv("GCS_BUCKET")
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
+	var urls []string
+	it := client.Bucket(bucket).Objects(ctx, nil)
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			panic(err)
+		}
+		urls = append(urls, attrs.MediaLink)
+	}
+	return urls
 }
 
 func processContacts(rawContacts ContactList) []To {
@@ -187,9 +218,22 @@ func randInt(min int, max int) int {
 	return min + rand.Intn(max-min)
 }
 
+// Init the .env file if not running in production
+func init() {
+	env := os.Getenv("ENVIRONMENT")
+	if env != "production" && env != "docker" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			panic("Error loading .env file")
+		}
+	}
+}
+
 func main() {
 	fmt.Println("Starting crons")
 	StartCrons()
+	fmt.Println("Getting bucket list")
+	fmt.Println(getGcsUrls())
 	for {
 
 	}

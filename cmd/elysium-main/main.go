@@ -97,30 +97,42 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		poem := getRandomPoem()
 
 		// Construct HTML
-		// html := constructHtml(imageUrl, poem)
-
-		// dat, err := os.ReadFile("./html/email_template.html")
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		// html := strings.Replace(string(dat), HTTPREPLACE, )
-
-		// Search and replace TEXTREPLACE and HTTPREPLACE
+		html := constructHtml(imageUrl, poem)
 
 		// Construct transactional query
-		// emailJson := &Email{
-		// 	Sender: Sender{
-		// 		Name: "Elly",
-		// 		Email: "elly@thecaninecosmos.dev",
-		// 	},
-		// 	To: []To{nick},
-		// 	Subject: "Woof",
-		// 	HTMLContent:
-		// }
+		email := constructSibQuery(html, contactsSlice)
+
+		// Fire transactional email
 
 		oneOffJob.Stop()
 	})
+}
+
+func constructSibQuery(html string, toSlice []To) Email {
+	emailJson := Email{
+		Sender: Sender{
+			Name:  "Elly",
+			Email: "elly@thecaninecosmos.dev",
+		},
+		To:          toSlice,
+		Subject:     "Woof",
+		HTMLContent: html,
+	}
+
+	return emailJson
+}
+
+func constructHtml(url string, poemStruc Poem) string {
+	dat, err := os.ReadFile("./html/email_template.html")
+	if err != nil {
+		panic(err)
+	}
+
+	html := strings.Replace(string(dat), "HTTPREPLACE", url, 1)
+	poem := poemStruc[0].Title + "\n\n" + strings.Join(poemStruc[0].Lines[:], "\n") + "\n- " + poemStruc[0].Author
+	html = strings.Replace(string(html), "TEXTREPLACE", poem, 1)
+
+	return html
 }
 
 func getGcsUrls() []string {

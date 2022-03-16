@@ -79,17 +79,18 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		fmt.Println("Ding I did a thing!")
 
 		// Get all contacts
-		// contactsRaw := getContacts()
+		contactsRaw := getContacts()
 
 		// Process contacts
-		// contactsSlice := processContacts(contactsRaw)
+		contactsSlice := processContacts(contactsRaw)
 
 		// Get image from bucket
-		// imageUrl := getRandomImage()
+		imageUrl := randStringSlice(getGcsUrls())
 
 		// Get poem from somewhere
 		// poem := getRandomPoem()
-		// Contruct HTML
+
+		// Construct HTML
 		// html := constructHtml(imageUrl, poem)
 
 		// dat, err := os.ReadFile("./html/email_template.html")
@@ -216,6 +217,10 @@ func randomNumExcludeParameter(
 
 func randInt(min int, max int) int {
 	return min + rand.Intn(max-min)
+}
+
+func randStringSlice(slice []string) string {
+	return slice[rand.Intn(len(slice))]
 }
 
 // Init the .env file if not running in production

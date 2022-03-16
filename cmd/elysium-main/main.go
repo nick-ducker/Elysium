@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -115,6 +116,10 @@ func sendTransactionalEmail(email Email) {
 	if err != nil {
 		panic(err)
 	}
+	// bf := bytes.NewBuffer([]byte{})
+	// jsonEncoder := json.NewEncoder(bf)
+	// jsonEncoder.SetEscapeHTML(false)
+	// jsonEncoder.Encode(email)
 
 	reqUrl := "https://api.sendinblue.com/v3/smtp/email"
 	sibPostRequest(reqUrl, jsonStr)
@@ -135,7 +140,7 @@ func constructSibQuery(html string, toSlice []To) Email {
 }
 
 func constructHtml(url string, poemStruc Poem) string {
-	dat, err := os.ReadFile("./html/email_template.html")
+	dat, err := os.ReadFile("./html/email_template.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -224,10 +229,19 @@ func sibPostRequest(url string, body []byte) {
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	req.Header.Add("api-key", os.Getenv("SENDINBLUE_KEY"))
 	req.Header.Add("Accept", "application/json")
-	_, err := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
+
+	defer res.Body.Close()
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(b))
 }
 
 func sibGetRequest(url string) *http.Response {
@@ -294,8 +308,7 @@ func init() {
 func main() {
 	fmt.Println("Starting crons")
 	StartCrons()
-	fmt.Println("Getting bucket list")
-	fmt.Println(getGcsUrls())
+	sendEmail()
 	for {
 
 	}

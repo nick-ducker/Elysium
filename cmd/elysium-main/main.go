@@ -20,6 +20,12 @@ import (
 var day int
 var hour int
 
+type Poem []struct {
+	Title     string   `json:"title"`
+	Author    string   `json:"author"`
+	Lines     []string `json:"lines"`
+	Linecount string   `json:"linecount"`
+}
 type Email struct {
 	Sender      Sender `json:"sender"`
 	To          []To   `json:"to"`
@@ -88,7 +94,7 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		imageUrl := randStringSlice(getGcsUrls())
 
 		// Get poem from somewhere
-		// poem := getRandomPoem()
+		poem := getRandomPoem()
 
 		// Construct HTML
 		// html := constructHtml(imageUrl, poem)
@@ -168,6 +174,23 @@ func getContacts() ContactList {
 	}
 
 	var body ContactList
+	json.Unmarshal(bodyBytes, &body)
+
+	return body
+}
+
+func getRandomPoem() Poem {
+	req, _ := http.NewRequest("GET", "https://poetrydb.org/random/1", nil)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+	var body Poem
 	json.Unmarshal(bodyBytes, &body)
 
 	return body

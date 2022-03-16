@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -81,31 +82,42 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 	fmt.Println(cronString)
 	oneOffJob := cron.NewWithLocation(timezone)
 	oneOffJob.AddFunc(cronString, func() {
-
-		fmt.Println("Ding I did a thing!")
-
-		// Get all contacts
-		contactsRaw := getContacts()
-
-		// Process contacts
-		contactsSlice := processContacts(contactsRaw)
-
-		// Get image from bucket
-		imageUrl := randStringSlice(getGcsUrls())
-
-		// Get poem from somewhere
-		poem := getRandomPoem()
-
-		// Construct HTML
-		html := constructHtml(imageUrl, poem)
-
-		// Construct transactional query
-		email := constructSibQuery(html, contactsSlice)
-
-		// Fire transactional email
-
+		sendEmail()
 		oneOffJob.Stop()
 	})
+}
+
+func sendEmail() {
+	// Get all contacts
+	contactsRaw := getContacts()
+
+	// Process contacts
+	contactsSlice := processContacts(contactsRaw)
+
+	// Get image from bucket
+	imageUrl := randStringSlice(getGcsUrls())
+
+	// Get poem from somewhere
+	poem := getRandomPoem()
+
+	// Construct HTML
+	html := constructHtml(imageUrl, poem)
+
+	// Construct transactional query
+	email := constructSibQuery(html, contactsSlice)
+
+	// Fire transactional email
+	sendTransactionalEmail(email)
+}
+
+func sendTransactionalEmail(email Email) {
+	jsonStr, err := json.Marshal(email)
+	if err != nil {
+		panic(err)
+	}
+
+	reqUrl := "https://api.sendinblue.com/v3/smtp/email"
+	sibPostRequest(reqUrl, jsonStr)
 }
 
 func constructSibQuery(html string, toSlice []To) Email {
@@ -206,6 +218,16 @@ func getRandomPoem() Poem {
 	json.Unmarshal(bodyBytes, &body)
 
 	return body
+}
+
+func sibPostRequest(url string, body []byte) {
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Add("api-key", os.Getenv("SENDINBLUE_KEY"))
+	req.Header.Add("Accept", "application/json")
+	_, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func sibGetRequest(url string) *http.Response {

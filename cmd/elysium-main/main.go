@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -70,12 +68,12 @@ func StartCrons() {
 	}
 	weeklyJob := cron.NewWithLocation(timezone)
 	weeklyJob.AddFunc("0 0 0 * * 0", func() {
+		rand.Seed(time.Now().UnixNano())
 		addJobForWeek(
 			randomNumExcludeParameter(day, 1, 5),
 			randomNumExcludeParameter(hour, 9, 17),
 			timezone,
 		)
-		weeklyJob.Stop()
 	})
 
 	weeklyJob.Start()
@@ -92,8 +90,6 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 }
 
 func sendEmail() {
-	rand.Seed(time.Now().UnixNano())
-
 	// Get all contacts
 	contactsRaw := getContacts()
 
@@ -102,7 +98,6 @@ func sendEmail() {
 
 	// Get image from bucket
 	imageUrl := randStringSlice(getGcsUrls())
-	fmt.Println(imageUrl)
 
 	// Get poem from somewhere
 	poem := getRandomPoem()
@@ -242,25 +237,6 @@ func getRandomPoem() Poem {
 	return body
 }
 
-func sibPostRequest(url string, body []byte) {
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
-	req.Header.Add("api-key", os.Getenv("SENDINBLUE_KEY"))
-	req.Header.Add("Accept", "application/json")
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	defer res.Body.Close()
-
-	b, err := io.ReadAll(res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(b))
-}
-
 func sibGetRequest(url string) *http.Response {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("api-key", os.Getenv("SENDINBLUE_KEY"))
@@ -293,7 +269,6 @@ func randomNumExcludeParameter(
 	var newNum int
 	for !unique {
 		newNum = randInt(min, max)
-		fmt.Println(newNum)
 		if newNum != exclude {
 			unique = true
 		}
@@ -344,8 +319,6 @@ func init() {
 func main() {
 	fmt.Println("Starting crons")
 	StartCrons()
-	sendEmail()
 	for {
-
 	}
 }

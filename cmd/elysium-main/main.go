@@ -90,6 +90,8 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 }
 
 func sendEmail() {
+	rand.Seed(time.Now().UnixNano())
+
 	// Get all contacts
 	contactsRaw := getContacts()
 
@@ -98,6 +100,7 @@ func sendEmail() {
 
 	// Get image from bucket
 	imageUrl := randStringSlice(getGcsUrls())
+	fmt.Println(imageUrl)
 
 	// Get poem from somewhere
 	poem := getRandomPoem()
@@ -116,40 +119,25 @@ func sendTransactionalEmail(
 	contactsSlice []sendinblue.SendSmtpEmailTo,
 	html string,
 ) {
-	// jsonStr, err := json.Marshal(email)
+	// var ctx context.Context
+	// cfg := sendinblue.NewConfiguration()
+	// cfg.AddDefaultHeader("api-key", os.Getenv("SENDINBLUE_KEY"))
+	// body := sendinblue.SendSmtpEmail{
+	// 	Sender: &sendinblue.SendSmtpEmailSender{
+	// 		Name:  "Elly",
+	// 		Email: "elly@thecaninecosmos.com",
+	// 	},
+	// 	To:          contactsSlice,
+	// 	HtmlContent: html,
+	// 	Subject:     "Woof",
+	// }
+
+	// sib := sendinblue.NewAPIClient(cfg)
+	// _, _, err := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
 	// if err != nil {
 	// 	panic(err)
 	// }
-	// bf := bytes.NewBuffer([]byte{})
-	// jsonEncoder := json.NewEncoder(bf)
-	// jsonEncoder.SetEscapeHTML(false)
-	// jsonEncoder.Encode(email)
-
-	// reqUrl := "https://api.sendinblue.com/v3/smtp/email"
-	// sibPostRequest(reqUrl, jsonStr)
-
-	var ctx context.Context
-	cfg := sendinblue.NewConfiguration()
-	//Configure API key authorization: api-key
-	cfg.AddDefaultHeader("api-key", os.Getenv("SENDINBLUE_KEY"))
-	body := sendinblue.SendSmtpEmail{
-		Sender: &sendinblue.SendSmtpEmailSender{
-			Name:  "Elly",
-			Email: "elly@thecaninecosmos.com",
-		},
-		To:          contactsSlice,
-		HtmlContent: html,
-		Subject:     "Woof",
-	}
-
-	sib := sendinblue.NewAPIClient(cfg)
-	result, resp, err := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
-	if err != nil {
-		fmt.Println("Error when calling AccountApi->get_account: ", err.Error())
-		return
-	}
-	fmt.Println("GetAccount Object:", result, " GetAccount Response: ", resp)
-	return
+	fmt.Println("Ding done!")
 }
 
 func constructSibQuery(html string, toSlice []string) Email {
@@ -173,7 +161,7 @@ func constructHtml(url string, poemStruc Poem) string {
 	}
 
 	html := strings.Replace(string(dat), "HTTPREPLACE", url, 1)
-	poem := poemStruc[0].Title + "\n\n" + strings.Join(poemStruc[0].Lines[:], "\n") + "\n- " + poemStruc[0].Author
+	poem := "<p><strong>" + poemStruc[0].Title + "</strong></p><p>" + strings.Join(poemStruc[0].Lines[:], "</p><p>") + "</p><p>- " + poemStruc[0].Author + "</p>"
 	html = strings.Replace(string(html), "TEXTREPLACE", poem, 1)
 
 	return html
@@ -299,8 +287,6 @@ func randomNumExcludeParameter(
 	min int,
 	max int,
 ) int {
-	rand.Seed(time.Now().UnixNano())
-
 	unique := false
 	var newNum int
 	for !unique {

@@ -16,6 +16,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron"
+	sendinblue "github.com/sendinblue/APIv3-go-library/lib"
 	"google.golang.org/api/iterator"
 )
 
@@ -29,10 +30,10 @@ type Poem []struct {
 	Linecount string   `json:"linecount"`
 }
 type Email struct {
-	Sender      Sender `json:"sender"`
-	To          []To   `json:"to"`
-	Subject     string `json:"subject"`
-	HTMLContent string `json:"htmlContent"`
+	Sender      Sender   `json:"sender"`
+	To          []string `json:"to"`
+	Subject     string   `json:"subject"`
+	HTMLContent string   `json:"htmlContent"`
 }
 type Sender struct {
 	Name  string `json:"name"`
@@ -105,27 +106,53 @@ func sendEmail() {
 	html := constructHtml(imageUrl, poem)
 
 	// Construct transactional query
-	email := constructSibQuery(html, contactsSlice)
+	// email := constructSibQuery(html, contactsSlice)
 
 	// Fire transactional email
-	sendTransactionalEmail(email)
+	sendTransactionalEmail(contactsSlice, html)
 }
 
-func sendTransactionalEmail(email Email) {
-	jsonStr, err := json.Marshal(email)
-	if err != nil {
-		panic(err)
-	}
+func sendTransactionalEmail(
+	contactsSlice []sendinblue.SendSmtpEmailTo,
+	html string,
+) {
+	// jsonStr, err := json.Marshal(email)
+	// if err != nil {
+	// 	panic(err)
+	// }
 	// bf := bytes.NewBuffer([]byte{})
 	// jsonEncoder := json.NewEncoder(bf)
 	// jsonEncoder.SetEscapeHTML(false)
 	// jsonEncoder.Encode(email)
 
-	reqUrl := "https://api.sendinblue.com/v3/smtp/email"
-	sibPostRequest(reqUrl, jsonStr)
+	// reqUrl := "https://api.sendinblue.com/v3/smtp/email"
+	// sibPostRequest(reqUrl, jsonStr)
+
+	var ctx context.Context
+	cfg := sendinblue.NewConfiguration()
+	//Configure API key authorization: api-key
+	cfg.AddDefaultHeader("api-key", os.Getenv("SENDINBLUE_KEY"))
+	body := sendinblue.SendSmtpEmail{
+		Sender: &sendinblue.SendSmtpEmailSender{
+			Name:  "Elly",
+			Email: "elly@thecaninecosmos.com",
+		},
+		To:          contactsSlice,
+		HtmlContent: html,
+		Subject:     "Woof",
+	}
+
+	sib := sendinblue.NewAPIClient(cfg)
+	result, resp, err := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
+	if err != nil {
+		fmt.Println("Error when calling AccountApi->get_account: ", err.Error())
+		return
+	}
+	fmt.Println("GetAccount Object:", result, " GetAccount Response: ", resp)
+	return
 }
 
-func constructSibQuery(html string, toSlice []To) Email {
+func constructSibQuery(html string, toSlice []string) Email {
 	emailJson := Email{
 		Sender: Sender{
 			Name:  "Elly",
@@ -179,10 +206,10 @@ func getGcsUrls() []string {
 	return urls
 }
 
-func processContacts(rawContacts ContactList) []To {
-	var slice []To
+func processContacts(rawContacts ContactList) []sendinblue.SendSmtpEmailTo {
+	var slice []sendinblue.SendSmtpEmailTo
 	for _, contact := range rawContacts.Contacts {
-		contactStruct := To{
+		contactStruct := sendinblue.SendSmtpEmailTo{
 			Name:  strings.Split(contact.Email, "@")[0],
 			Email: contact.Email,
 		}

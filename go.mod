@@ -7,6 +7,8 @@ require (
 	github.com/robfig/cron v1.2.0
 )
 
+require github.com/antihax/optional v1.0.0 // indirect
+
 require (
 	cloud.google.com/go v0.100.2 // indirect
 	cloud.google.com/go/compute v1.2.0 // indirect
@@ -16,6 +18,7 @@ require (
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/joho/godotenv v1.4.0
+	github.com/sendinblue/APIv3-go-library v2.0.0+incompatible
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect

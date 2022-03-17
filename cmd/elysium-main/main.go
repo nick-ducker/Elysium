@@ -23,6 +23,8 @@ import (
 var day int
 var hour int
 
+var previousUrls []string
+
 type Poem []struct {
 	Title     string   `json:"title"`
 	Author    string   `json:"author"`
@@ -119,25 +121,25 @@ func sendTransactionalEmail(
 	contactsSlice []sendinblue.SendSmtpEmailTo,
 	html string,
 ) {
-	// var ctx context.Context
-	// cfg := sendinblue.NewConfiguration()
-	// cfg.AddDefaultHeader("api-key", os.Getenv("SENDINBLUE_KEY"))
-	// body := sendinblue.SendSmtpEmail{
-	// 	Sender: &sendinblue.SendSmtpEmailSender{
-	// 		Name:  "Elly",
-	// 		Email: "elly@thecaninecosmos.com",
-	// 	},
-	// 	To:          contactsSlice,
-	// 	HtmlContent: html,
-	// 	Subject:     "Woof",
-	// }
+	var ctx context.Context
+	cfg := sendinblue.NewConfiguration()
+	cfg.AddDefaultHeader("api-key", os.Getenv("SENDINBLUE_KEY"))
+	body := sendinblue.SendSmtpEmail{
+		Sender: &sendinblue.SendSmtpEmailSender{
+			Name:  "Elly",
+			Email: "elly@thecaninecosmos.com",
+		},
+		To:          contactsSlice,
+		HtmlContent: html,
+		Subject:     "Woof",
+	}
 
-	// sib := sendinblue.NewAPIClient(cfg)
-	// _, _, err := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	fmt.Println("Ding done!")
+	sib := sendinblue.NewAPIClient(cfg)
+	_, _, err := sib.TransactionalEmailsApi.SendTransacEmail(ctx, body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Email sent!")
 }
 
 func constructSibQuery(html string, toSlice []string) Email {
@@ -304,7 +306,28 @@ func randInt(min int, max int) int {
 }
 
 func randStringSlice(slice []string) string {
-	return slice[rand.Intn(len(slice))]
+	var url string
+	if len(slice) == len(previousUrls) {
+		previousUrls = nil
+	}
+	for {
+		url = slice[rand.Intn(len(slice))]
+		if !contains(previousUrls, url) {
+			break
+		}
+		rand.Seed(time.Now().UnixNano())
+	}
+	previousUrls = append(previousUrls, url)
+	return url
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 // Init the .env file if not running in production

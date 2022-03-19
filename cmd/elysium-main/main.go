@@ -316,9 +316,13 @@ func init() {
 	}
 }
 
+func ping(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "pong")
+}
+
 func main() {
 	fmt.Println("Starting crons")
 	StartCrons()
-	for {
-	}
+	http.HandleFunc("/ping", ping)
+	http.ListenAndServe(":7070", nil)
 }

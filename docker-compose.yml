@@ -1,0 +1,10 @@
+version: '3'
+services:
+  web: 
+    build: .
+    environment:
+      - ENVIRONMENT=docker
+    env_file: 
+      - .env 
+    ports:
+      - "7070:7070"

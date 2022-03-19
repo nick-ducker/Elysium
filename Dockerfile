@@ -3,8 +3,8 @@ FROM golang:${GO_VERSION}-alpine AS builder
 
 WORKDIR /app
 
-COPY ./cmd .
-COPY go.* .
+COPY ./cmd/elysium-main .
+COPY go.* ./
 
 RUN go get
 RUN go build -o ./elysium

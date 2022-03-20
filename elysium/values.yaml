@@ -5,18 +5,19 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: ghcr.io/nick-ducker/elysium
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
+  secret: elysium-secrets
 
-imagePullSecrets: []
+imagePullSecrets: [ dockerconfigjson-github-com ]
 nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -38,7 +39,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 7070
 
 ingress:
   enabled: false

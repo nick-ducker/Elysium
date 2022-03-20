@@ -35,8 +35,11 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 7070
               protocol: TCP
+          envFrom: 
+          - secretRef:
+            name: {{ .Values.image.secret }}
           livenessProbe:
             httpGet:
               path: /

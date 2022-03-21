@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  key.json: {{ .Values.json.key }}
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: {{ .Values.json.name }}

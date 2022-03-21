@@ -18,6 +18,10 @@ fullnameOverride: ""
 env:
   SENDINBLUE_KEY: xyz
   GCS_BUCKET: xyz
+  GOOGLE_APPLICATION_CREDENTIALS: xyz
+
+json:
+  key: xyz
 
 serviceAccount:
   # Specifies whether a service account should be created

@@ -15,6 +15,10 @@ imagePullSecrets: [ dockerconfigjson-github-com ]
 nameOverride: ""
 fullnameOverride: ""
 
+env:
+  SENDINBLUE_KEY: xyz
+  GCS_BUCKET: xyz
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: false

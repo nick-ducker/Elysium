@@ -15,5 +15,6 @@ RUN apk update && apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 COPY --from=builder /app/elysium .
+COPY ./html /app/html
 
 CMD [ "./elysium" ]

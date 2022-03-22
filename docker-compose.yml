@@ -8,3 +8,7 @@ services:
       - .env 
     ports:
       - "7070:7070"
+    volumes:
+    - type: bind
+      source: ./gkey.json
+      target: /app/gkey.json

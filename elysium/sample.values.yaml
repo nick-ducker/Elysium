@@ -19,6 +19,7 @@ env:
   SENDINBLUE_KEY: xyz
   GCS_BUCKET: xyz
   GOOGLE_APPLICATION_CREDENTIALS: xyz
+  API_KEY: xyz
 
 json:
   key: xyz

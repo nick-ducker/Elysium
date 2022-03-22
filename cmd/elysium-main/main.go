@@ -320,9 +320,36 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
 
+func testMail(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("X-API-KEY") == os.Getenv("API_KEY") {
+		sendEmail()
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		resp := make(map[string]string)
+		resp["message"] = "Email test sent"
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			panic(err)
+		}
+		w.Write(jsonResp)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Header().Set("Content-Type", "application/json")
+		resp := make(map[string]string)
+		resp["message"] = "Unauthorized"
+		jsonResp, err := json.Marshal(resp)
+		if err != nil {
+			panic(err)
+		}
+		w.Write(jsonResp)
+	}
+	return
+}
+
 func main() {
 	fmt.Println("Starting crons")
 	StartCrons()
 	http.HandleFunc("/ping", ping)
+	http.HandleFunc("/test-email", testMail)
 	http.ListenAndServe(":7070", nil)
 }

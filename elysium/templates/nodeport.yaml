@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: elysium-nodeport
+  name: elysium-nodeport
+spec:
+  ports:
+  - name: 32495-7070
+    port: 32495
+    protocol: TCP
+    targetPort: 7070
+  selector:
+    app: elysium-nodeport
+  type: NodePort
+status:
+  loadBalancer: {}

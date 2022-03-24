@@ -20,10 +20,8 @@ spec:
       labels:
         {{- include "elysium.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      - name: {{ .Values.imagePullSecret }}
       serviceAccountName: {{ include "elysium.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -41,11 +39,16 @@ spec:
             - name: http
               containerPort: 7070
               protocol: TCP
-          envFrom: 
-          - secretRef:
-            name: {{ .Values.image.secret }}
+          env:
+          {{- range $key, $val := .Values.env }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                name: elysium-secrets
+                key: {{ $key }}
+          {{- end}}
           volumeMounts:
-          - name: {{ Values.json.name }}
+          - name: {{ .Values.json.name }}
             mountPath: /var/secrets/google
           livenessProbe:
             httpGet:

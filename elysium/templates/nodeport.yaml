@@ -8,9 +8,8 @@ metadata:
 spec:
   ports:
   - name: 32495-7070
-    port: 32495
-    protocol: TCP
-    targetPort: 7070
+    port: 7070
+    protocol: TCP 
   selector:
     app: elysium-nodeport
   type: NodePort

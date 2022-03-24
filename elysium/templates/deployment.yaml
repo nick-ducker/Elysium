@@ -50,14 +50,6 @@ spec:
           volumeMounts:
           - name: {{ .Values.json.name }}
             mountPath: /var/secrets/google
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

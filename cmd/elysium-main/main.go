@@ -87,6 +87,8 @@ func addJobForWeek(day int, hour int, timezone *time.Location) {
 		sendEmail()
 		oneOffJob.Stop()
 	})
+
+	oneOffJob.Start()
 }
 
 func sendEmail() {

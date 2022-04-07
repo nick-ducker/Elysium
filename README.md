@@ -15,3 +15,7 @@ Some key commands so I don't forget:
 **Figure out which port the dang thing is running on**
 
     `kubectl get svc <deployment name>`
+
+**Update the helm deployment**
+
+    `helm upgrade elysium ./elysium`
